@@ -1,4 +1,4 @@
-![Banner](./banner.png)
+![Banner](./banner_clean.png)
 # 🌐 Prompt Engineering Site
 
 Bem-vindo! / Welcome! 🚀  
