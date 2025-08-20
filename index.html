@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cheatsheet Interativa + Mini Curso</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-900">
+  <div class="max-w-5xl mx-auto p-6 md:p-10 space-y-8">
+    <header class="flex items-start justify-between gap-4">
+      <div>
+        <h1 class="text-3xl md:text-4xl font-bold tracking-tight">🚀 Cheatsheet Interativa + Mini Curso</h1>
+        <p class="mt-2 text-gray-600 max-w-2xl">Clique para copiar presets e modelos, acompanhe seu progresso no mini curso e baixe versões em PDF/PNG.</p>
+      </div>
+      <a download="cheatsheet_prompt_engineering_poster.pdf" href="./cheatsheet_prompt_engineering_poster.pdf" class="hidden md:flex">
+        <button class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-gray-900 text-white hover:bg-black">⬇️ Baixar Cartaz</button>
+      </a>
+    </header>
+
+    <nav class="grid grid-cols-4 gap-2">
+      <button data-tab="presets" class="tab-btn px-3 py-2 rounded-xl bg-white border">⚙️ Presets</button>
+      <button data-tab="checklist" class="tab-btn px-3 py-2 rounded-xl bg-white border">✅ Checklist</button>
+      <button data-tab="templates" class="tab-btn px-3 py-2 rounded-xl bg-white border">📖 Modelos</button>
+      <button data-tab="minicurso" class="tab-btn px-3 py-2 rounded-xl bg-white border">🎓 Mini Curso</button>
+    </nav>
+
+    <section id="tab-presets" class="tab-section space-y-4">
+      <div class="grid md:grid-cols-2 gap-3" id="presets"></div>
+      <div class="pt-4 grid md:grid-cols-3 gap-3">
+        <a download="cheatsheet_prompt_engineering.pdf" href="./cheatsheet_prompt_engineering.pdf" class="block no-underline">
+          <div class="p-4 rounded-2xl bg-white border hover:shadow-lg transition">
+            <div class="font-semibold">⬇️ Cheatsheet detalhada (PDF)</div>
+            <div class="text-sm text-gray-600 mt-1">Clique para baixar</div>
+          </div>
+        </a>
+        <a download="cheatsheet_prompt_engineering_poster.pdf" href="./cheatsheet_prompt_engineering_poster.pdf" class="block no-underline">
+          <div class="p-4 rounded-2xl bg-white border hover:shadow-lg transition">
+            <div class="font-semibold">⬇️ Cartaz visual (PDF)</div>
+            <div class="text-sm text-gray-600 mt-1">Clique para baixar</div>
+          </div>
+        </a>
+        <a download="cheatsheet_prompt_engineering_poster.png" href="./cheatsheet_prompt_engineering_poster.png" class="block no-underline">
+          <div class="p-4 rounded-2xl bg-white border hover:shadow-lg transition">
+            <div class="font-semibold">🖼️ Cartaz (PNG)</div>
+            <div class="text-sm text-gray-600 mt-1">Clique para baixar</div>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <section id="tab-checklist" class="tab-section hidden space-y-4">
+      <div class="bg-white border rounded-2xl p-6">
+        <ol id="checklist" class="grid gap-3"></ol>
+      </div>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="bg-white border rounded-2xl p-4">
+          <div class="font-semibold mb-2">⚠️ Erros comuns</div>
+          <ul id="mistakes" class="space-y-2"></ul>
+        </div>
+        <div class="bg-white border rounded-2xl p-4">
+          <div class="font-semibold mb-2">🔗 Links úteis</div>
+          <ul class="space-y-2">
+            <li><a class="underline" download="cheatsheet_prompt_engineering.pdf" href="./cheatsheet_prompt_engineering.pdf">PDF completo</a></li>
+            <li><a class="underline" download="cheatsheet_prompt_engineering_poster.png" href="./cheatsheet_prompt_engineering_poster.png">Cartaz PNG</a></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-templates" class="tab-section hidden space-y-4">
+      <div class="flex items-center gap-3">
+        <input id="filter" class="w-full px-3 py-2 border rounded-xl" placeholder="Filtrar modelos…" />
+        <div id="count" class="text-sm text-gray-600">0 modelos</div>
+      </div>
+      <div id="templates" class="space-y-3"></div>
+    </section>
+
+    <section id="tab-minicurso" class="tab-section hidden space-y-4">
+      <div class="flex items-center gap-3">
+        <div class="font-semibold">Progresso: <span id="progress">0/6</span></div>
+        <button id="resetProgress" class="px-3 py-1 rounded-lg border bg-white hover:bg-gray-100">Limpar progresso</button>
+      </div>
+      <div id="lessons" class="space-y-4"></div>
+    </section>
+
+    <footer class="text-sm text-gray-600">
+      <div class="bg-white border rounded-2xl p-4">
+        <div class="font-semibold">Créditos & Observações</div>
+        <p>Conteúdo baseado na síntese do PDF de Prompt Engineering (Google, fev/2025) e melhores práticas gerais de LLMs.</p>
+        <p>Use temperatura baixa para tarefas com resposta única correta; prefira saídas estruturadas (JSON) quando for consumir em pipelines.</p>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    const presets = [
+      { name: "Equilíbrio (default)", value: "temp=0.2, top-P=0.95, top-K=30" },
+      { name: "Criativo", value: "temp=0.9, top-P=0.99, top-K=40" },
+      { name: "Factual/Contido", value: "temp=0.1, top-P=0.9, top-K=20" },
+      { name: "Resposta única (ex.: cálculo)", value: "temp=0" },
+    ];
+    const templates = [
+      { title: "Extração estruturada (JSON)", text: "Extraia {itens} deste texto e retorne apenas JSON válido no schema: { ... }. Não inclua explicações." },
+      { title: "Raciocínio controlado (CoT)", text: "Resolva o problema pensando passo a passo. Em seguida, retorne apenas a resposta final na linha: 'Resposta:'." },
+      { title: "Classificação few-shot", text: "Classifique como [A|B|C]. Exemplos: … Agora, texto: '…' → retorne só o rótulo." },
+    ];
+    const mistakes = [
+      "Pedir criatividade em tarefa que exige precisão.",
+      "Não limitar tokens → respostas longas ou em loop.",
+      "Dar muitos 'NÃO faça'; prefira instruções afirmativas.",
+      "Exemplos de classificação sempre na mesma ordem.",
+      "Não versionar ou documentar experimentos."
+    ];
+    const checklist = [
+      "Defina o objetivo (saída + formato).",
+      "Escolha modelo e presets (temp, top-K, top-P, max tokens).",
+      "Dê contexto mínimo viável (quem/onde/quando/dados).",
+      "Mostre 1–5 exemplos (few-shot) — inclua casos extremos quando fizer sentido.",
+      "Especifique o formato da resposta (ex.: JSON com schema simples).",
+      "Se precisar de raciocínio: peça 'pense passo a passo' e separe raciocínio da resposta.",
+      "Teste e documente (guarde prompt, configs, saídas, avaliação)."
+    ];
+
+    function copyText(text) { try { navigator.clipboard.writeText(text); alert("Copiado!"); } catch(e){} }
+    function $(s, el=document){ return el.querySelector(s); }
+    function $all(s, el=document){ return [...el.querySelectorAll(s)]; }
+
+    const tabButtons = $all('.tab-btn');
+    const tabSections = $all('.tab-section');
+    function activateTab(id){
+      tabButtons.forEach(b => b.classList.remove('bg-gray-900','text-white'));
+      tabSections.forEach(s => s.classList.add('hidden'));
+      const btn = tabButtons.find(b => b.dataset.tab === id);
+      if (btn) btn.classList.add('bg-gray-900','text-white');
+      $('#tab-'+id).classList.remove('hidden');
+      localStorage.setItem('pe_active_tab', id);
+    }
+    tabButtons.forEach(b => b.addEventListener('click', () => activateTab(b.dataset.tab)));
+    activateTab(localStorage.getItem('pe_active_tab') || 'presets');
+
+    // Presets
+    const presetsEl = $('#presets');
+    presets.forEach(p => {
+      const div = document.createElement('div');
+      div.className = "flex items-center justify-between gap-4 p-3 rounded-xl bg-white border";
+      div.innerHTML = `
+        <div>
+          <div class="font-semibold">${p.name}</div>
+          <div class="text-sm text-gray-600">${p.value}</div>
+        </div>
+        <button class="px-3 py-1 rounded-lg border bg-white hover:bg-gray-100">Copiar</button>
+      `;
+      div.querySelector('button').addEventListener('click', () => copyText(p.value));
+      presetsEl.appendChild(div);
+    });
+
+    // Checklist
+    const checklistEl = $('#checklist');
+    checklist.forEach((s, i) => {
+      const li = document.createElement('li');
+      li.className = "p-3 rounded-xl bg-white border flex gap-2 items-start";
+      li.innerHTML = `<span class="font-semibold">${i+1}.</span><span>${s}</span>`;
+      checklistEl.appendChild(li);
+    });
+
+    // Mistakes
+    const mistakesEl = $('#mistakes');
+    mistakes.forEach(m => {
+      const li = document.createElement('li');
+      li.className = "p-3 rounded-xl bg-white border";
+      li.textContent = '• ' + m;
+      mistakesEl.appendChild(li);
+    });
+
+    // Templates
+    const filterInput = $('#filter');
+    const templatesEl = $('#templates');
+    function renderTemplates() {
+      const q = (filterInput.value || '').toLowerCase();
+      const list = templates.filter(t => (t.title + t.text).toLowerCase().includes(q));
+      $('#count').textContent = list.length + ' modelos';
+      templatesEl.innerHTML = '';
+      list.forEach((t) => {
+        const item = document.createElement('div');
+        item.className = "bg-white border rounded-2xl overflow-hidden";
+        item.innerHTML = `
+          <button class="w-full text-left px-4 py-3 font-semibold hover:bg-gray-50">${t.title}</button>
+          <div class="p-4 border-t hidden">
+            <div class="text-sm whitespace-pre-wrap">${t.text}</div>
+            <div class="pt-2">
+              <button class="px-3 py-1 rounded-lg border bg-white hover:bg-gray-100">Copiar</button>
+            </div>
+          </div>
+        `;
+        const btn = item.querySelector('button');
+        const panel = item.querySelector('div');
+        btn.addEventListener('click', () => panel.classList.toggle('hidden'));
+        item.querySelector('div button').addEventListener('click', () => copyText(t.text));
+        templatesEl.appendChild(item);
+      });
+    }
+    filterInput.addEventListener('input', renderTemplates);
+    renderTemplates();
+
+    // Mini-curso (versão simplificada — sem quizzes aqui; veja curso.html para módulos com avaliação)
+    const lessons = [
+      "Fundamentos e parâmetros",
+      "Checklist do objetivo e formato",
+      "Few-shot eficaz",
+      "Raciocínio explícito (CoT)",
+      "Saídas estruturadas e validação",
+      "Documentação e iteração"
+    ];
+    const lessonsEl = $('#lessons');
+    const progressEl = $('#progress');
+    let progress = JSON.parse(localStorage.getItem('pe_progress')||'{}');
+    function update(){ progressEl.textContent = Object.values(progress).filter(Boolean).length + '/6'; localStorage.setItem('pe_progress', JSON.stringify(progress)); }
+    lessons.forEach((title, idx) => {
+      const i = idx+1;
+      const card = document.createElement('div');
+      card.className = "bg-white border rounded-2xl";
+      const checked = !!progress[i];
+      card.innerHTML = `
+        <div class="flex items-center justify-between p-4">
+          <div class="text-lg font-semibold">${i}. ${title}</div>
+          <label class="flex items-center gap-2 text-sm">
+            <input type="checkbox" class="h-4 w-4" ${checked ? 'checked': ''} data-idx="${i}" /> Marcar como feito
+          </label>
+        </div>`;
+      lessonsEl.appendChild(card);
+    });
+    lessonsEl.addEventListener('change', (e)=>{
+      if (e.target && e.target.matches('input[type="checkbox"][data-idx]')){
+        const idx = e.target.getAttribute('data-idx');
+        progress[idx] = e.target.checked;
+        update();
+      }
+    });
+    $('#resetProgress').addEventListener('click', ()=>{ progress={}; update(); document.querySelectorAll('input[type="checkbox"][data-idx]').forEach(c=> c.checked=false); });
+    update();
+  </script>
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Curso Interativo de Prompt Engineering — Módulos + Quiz</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-900">
+  <div class="max-w-6xl mx-auto p-6 md:p-10 space-y-8">
+    <header class="flex items-start justify-between gap-4">
+      <div>
+        <h1 class="text-3xl md:text-4xl font-bold tracking-tight">🎓 Curso Interativo de Prompt Engineering</h1>
+        <p class="mt-2 text-gray-600 max-w-3xl">Módulos com avaliações (quizzes). Progresso e pontuação salvos no navegador. Inclui downloads.</p>
+      </div>
+      <div class="hidden md:flex gap-2">
+        <a download="cheatsheet_prompt_engineering.pdf" href="./cheatsheet_prompt_engineering.pdf" class="px-4 py-2 rounded-2xl bg-white border hover:bg-gray-100">⬇️ PDF</a>
+        <a download="cheatsheet_prompt_engineering_poster.pdf" href="./cheatsheet_prompt_engineering_poster.pdf" class="px-4 py-2 rounded-2xl bg-white border hover:bg-gray-100">⬇️ Cartaz</a>
+        <a download="cheatsheet_prompt_engineering_poster.png" href="./cheatsheet_prompt_engineering_poster.png" class="px-4 py-2 rounded-2xl bg-white border hover:bg-gray-100">🖼️ PNG</a>
+      </div>
+    </header>
+
+    <div class="bg-white border rounded-2xl p-4">
+      <div class="flex items-center justify-between">
+        <div class="font-semibold">Progresso do curso</div>
+        <div class="text-sm text-gray-600">Pontuação total: <span id="scoreTotal">0</span></div>
+      </div>
+      <div class="w-full bg-gray-100 rounded-full h-3 mt-2"><div id="progressBar" class="bg-gray-900 h-3 rounded-full" style="width:0%"></div></div>
+      <div class="mt-2 text-sm text-gray-600"><span id="progressText">0</span> de <span id="totalModules">0</span> módulos concluídos</div>
+      <div class="mt-3">
+        <button id="resetAll" class="px-3 py-1 rounded-lg border bg-white hover:bg-gray-100 text-sm">Limpar progresso & pontuação</button>
+      </div>
+    </div>
+
+    <div id="modules" class="space-y-6"></div>
+
+    <div id="certificate" class="hidden bg-white border rounded-2xl p-6">
+      <div class="text-2xl font-bold mb-2">🏆 Certificado de Conclusão</div>
+      <p class="text-gray-700">Você concluiu todos os módulos.</p>
+      <p class="text-gray-700">Pontuação final: <span id="finalScore"></span></p>
+      <button id="printCert" class="mt-4 px-4 py-2 rounded-2xl bg-gray-900 text-white hover:bg-black">Imprimir / Salvar PDF</button>
+    </div>
+
+    <footer class="text-sm text-gray-600">
+      <div class="bg-white border rounded-2xl p-4">
+        <div class="font-semibold">Créditos & Observações</div>
+        <p>Conteúdo baseado na síntese do PDF de Prompt Engineering (Google, fev/2025) e melhores práticas gerais de LLMs.</p>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    const COURSE_KEY = 'pe_course_v2';
+    const course = [
+      { id:'mod1', title:'Fundamentos: temperatura, top-P, top-K e tokens', objective:'Compreender o efeito dos parâmetros.', content:[
+        'Temperatura baixa (~0) → mais determinismo.',
+        'Temperatura alta (~0.7–1.0) → mais criatividade.',
+        'Top-P / Top-K controlam a amostragem de tokens.',
+        'Max tokens impacta tamanho da saída e custo.'
+      ], quiz:[
+        { q:'Para tarefa com única resposta correta, use…', options:['temperatura 0.9', 'temperatura 0'], answer:1, explain:'Temp baixa reduz variação.' },
+        { q:'Top-P/Top-K servem para…', options:['controlar tokens candidatos', 'aumentar contexto'], answer:0, explain:'Controlam o espaço de amostragem.' }
+      ]},
+      { id:'mod2', title:'Objetivo, formato e saídas estruturadas', objective:'Definir saída-alvo e schema.', content:[
+        'Prefira JSON com schema simples.',
+        'Limite a extensão (ex.: “5 bullets”).'
+      ], quiz:[
+        { q:'Por que JSON?', options:['mais bonito', 'estruturar/validar e reduzir ambiguidades'], answer:1, explain:'Facilita consumo programático.' }
+      ]},
+      { id:'mod3', title:'Few-shot e cobertura de casos', objective:'Exemplos representativos.', content:[
+        '1–5 exemplos bem escolhidos bastam.',
+        'Embaralhe classes em classificação.'
+      ], quiz:[
+        { q:'Em classificação few-shot, embaralhar classes…', options:['reduz viés de ordem', 'não importa'], answer:0, explain:'Ajuda a evitar padrões artificiais.' }
+      ]},
+      { id:'mod4', title:'Raciocínio: CoT, self-consistency, ToT', objective:'Aplicar técnicas de raciocínio.', content:[
+        'CoT melhora acerto; separe raciocínio da resposta final.',
+        'Self-consistency: várias cadeias e voto.'
+      ], quiz:[
+        { q:'CoT significa…', options:['Chain-of-Thought', 'Class-of-Types'], answer:0, explain:'Raciocínio passo a passo.' }
+      ]},
+      { id:'mod5', title:'ReAct e APE', objective:'Ferramentas e automação de prompts.', content:[
+        'ReAct = Reason + Act + Observe.',
+        'APE gera/avalia variações de prompt.'
+      ], quiz:[
+        { q:'ReAct combina…', options:['raciocínio + ação + observação', 'apenas raciocínio'], answer:0, explain:'Laço pensar→agir→observar.' }
+      ]},
+      { id:'mod6', title:'Documentação e iteração', objective:'Padronizar e medir.', content:[
+        'Versione prompts/parâmetros/saídas.',
+        'Registre métricas e links.'
+      ], quiz:[
+        { q:'Documentar ajuda em…', options:['reprodutibilidade e melhoria contínua', 'apenas estética'], answer:0, explain:'Base para evolução confiável.' }
+      ]},
+    ];
+
+    const state = JSON.parse(localStorage.getItem(COURSE_KEY) || '{}');
+    if (!state.modules) state.modules = {};
+    if (!state.score) state.score = 0;
+
+    function save(){ localStorage.setItem(COURSE_KEY, JSON.stringify(state)); }
+    function percent(n,d){ return d? Math.round((n/d)*100) : 0; }
+
+    function renderProgress(){
+      const total = course.length;
+      const done = Object.values(state.modules).filter(Boolean).length;
+      document.getElementById('totalModules').textContent = total;
+      document.getElementById('progressText').textContent = done;
+      document.getElementById('scoreTotal').textContent = state.score;
+      document.getElementById('progressBar').style.width = percent(done,total)+'%';
+      const cert = document.getElementById('certificate');
+      const finalScore = document.getElementById('finalScore');
+      if (done === total){ cert.classList.remove('hidden'); finalScore.textContent = state.score; } else { cert.classList.add('hidden'); }
+    }
+
+    const root = document.getElementById('modules');
+    course.forEach((m, idx) => {
+      const wrap = document.createElement('div');
+      wrap.className = "bg-white border rounded-2xl overflow-hidden";
+      const modNum = idx+1;
+      wrap.innerHTML = `
+        <div class="p-4 border-b bg-gray-50 flex items-start justify-between">
+          <div>
+            <div class="text-lg font-semibold">Módulo ${modNum}: ${m.title}</div>
+            <div class="text-sm text-gray-600">Objetivo: ${m.objective}</div>
+          </div>
+          <div class="text-sm ${state.modules[m.id] ? 'text-green-700' : 'text-gray-500'}">${state.modules[m.id] ? 'Concluído ✅' : 'Em progresso'}</div>
+        </div>
+        <div class="p-4 space-y-3">
+          ${m.content.map(p=>`<div class='p-3 rounded-xl bg-gray-50 border'>${p}</div>`).join('')}
+          <details class="bg-white border rounded-2xl">
+            <summary class="cursor-pointer px-4 py-3 font-semibold">Fazer quiz (${m.quiz.length} questões)</summary>
+            <div class="p-4 space-y-4" id="quiz-${m.id}"></div>
+            <div class="p-4 border-t flex items-center gap-3">
+              <button class="px-4 py-2 rounded-xl bg-gray-900 text-white hover:bg-black" data-action="submit" data-mid="${m.id}">Enviar respostas</button>
+              <button class="px-3 py-2 rounded-xl border bg-white hover:bg-gray-100" data-action="reset" data-mid="${m.id}">Limpar respostas</button>
+              <div class="text-sm text-gray-600" id="result-${m.id}"></div>
+            </div>
+          </details>
+        </div>`;
+      root.appendChild(wrap);
+
+      const qroot = document.getElementById('quiz-'+m.id);
+      m.quiz.forEach((qq, qi) => {
+        const qid = `${m.id}-q${qi}`;
+        const block = document.createElement('div');
+        block.className = "bg-gray-50 border rounded-2xl p-3";
+        block.innerHTML = `
+          <div class="font-medium">${qi+1}. ${qq.q}</div>
+          <div class="mt-2 space-y-2">
+            ${qq.options.map((opt, oi)=>`
+              <label class="flex items-center gap-2">
+                <input type="radio" name="${qid}" value="${oi}">
+                <span>${opt}</span>
+              </label>
+            `).join('')}
+          </div>
+          <div class="mt-2 text-sm text-gray-600 hidden" id="exp-${qid}">Explicação: ${qq.explain}</div>`;
+        qroot.appendChild(block);
+      });
+    });
+
+    root.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-action]');
+      if (!btn) return;
+      const mid = btn.getAttribute('data-mid');
+      const mod = course.find(m=> m.id===mid);
+      const resultEl = document.getElementById('result-'+mid);
+
+      if (btn.getAttribute('data-action') === 'reset'){
+        document.querySelectorAll(`#quiz-${mid} input[type=radio]`).forEach(r=> r.checked=false);
+        document.querySelectorAll(`#quiz-${mid} [id^=exp-]`).forEach(el=> el.classList.add('hidden'));
+        resultEl.textContent = '';
+        return;
+      }
+      if (btn.getAttribute('data-action') === 'submit'){
+        let correct = 0;
+        mod.quiz.forEach((qq, qi) => {
+          const name = `${mid}-q${qi}`;
+          const chosen = document.querySelector(`input[name='${name}']:checked`);
+          const exp = document.getElementById(`exp-${name}`);
+          const isRight = chosen && Number(chosen.value) === qq.answer;
+          if (exp) exp.classList.remove('hidden');
+          if (isRight) correct += 1;
+        });
+        resultEl.textContent = `Você acertou ${correct}/${mod.quiz.length}.`;
+        if (!state.modules[mid] && correct === mod.quiz.length){
+          state.score += mod.quiz.length;
+          state.modules[mid] = true;
+          save();
+        }
+        renderProgress();
+      }
+    });
+
+    document.getElementById('resetAll').addEventListener('click', ()=>{ localStorage.removeItem(COURSE_KEY); location.reload(); });
+    document.getElementById('printCert').addEventListener('click', ()=> window.print());
+    renderProgress();
+  </script>
+</body>
+</html>
